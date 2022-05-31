@@ -1,15 +1,14 @@
 from urllib import response
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import hotel, rooms
+
+from .models import hotel, reservation, rooms
 
 # User Serializer
 class RoomsSerializer(serializers.ModelSerializer):
     hotel = serializers.SerializerMethodField()
     def get_hotel(self, obj):
-        return obj.hotel.nameHotel 
-        
-
+        return {"nameHotel": obj.hotel.nameHotel, "location":obj.hotel.location,"description":obj.hotel.description, "stars":obj.hotel.stars,}
 
     class Meta:
         model = rooms
@@ -19,6 +18,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password', 'is_staff')
+
+        
+class ReservationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = reservation
+        fields = ('client', 'room','person', 'dateStart', 'dateEnd')
 
 # Register Serializer
 class RegisterSerializer(serializers.ModelSerializer):

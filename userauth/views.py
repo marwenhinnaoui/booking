@@ -8,11 +8,11 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 from knox.models import AuthToken
 from rest_framework.views import APIView
-from .serializers import UserSerializer, RegisterSerializer, RoomsSerializer
+from .serializers import ReservationSerializer, UserSerializer, RegisterSerializer, RoomsSerializer
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from django.contrib.auth import login
 from knox.views import LoginView as KnoxLoginView
-from .models import rooms
+from .models import reservation, rooms
 from rest_framework import status
 
 # Create your views here.
@@ -21,6 +21,36 @@ from rest_framework import status
 def userauth(request):
     return HttpResponse('userauth')
 
+class Reservation(generics.ListCreateAPIView):
+    permission_classes = (permissions.AllowAny,)
+    http_method_names = ['get', 'head', 'post']
+    queryset = reservation.objects.all()
+    def get_serializer_class(self):
+        return ReservationSerializer
+    def Reserve(self, request):
+        queryset = self.get_queryset()
+        if request.method == 'POST' :
+            ReserveSerializer = ReservationSerializer(queryset, many=True)
+
+            if ReserveSerializer.is_valid():
+                ReserveSerializer.save()
+                return JsonResponse(ReserveSerializer.data, status=status.HTTP_201_CREATED) 
+            return JsonResponse(ReserveSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# class Reservation(generics.ListCreateAPIView):
+#     permission_classes = (permissions.AllowAny,)
+#     http_method_names = ['get', 'head', 'post']
+#     queryset = reservation.objects.all()
+#     def get_serializer_class(self):
+#         return ReservationSerializer
+#     def Reserve(request):
+#         if request.method == 'POST' :
+#             ReserveData = JSONParser().parse(request)
+#             ReserveSerializer = ReservationSerializer(data=ReserveData)
+#             if ReserveSerializer.is_valid():
+#                 ReserveSerializer.save()
+#                 return JsonResponse(ReserveSerializer.data, status=status.HTTP_201_CREATED) 
+#             return JsonResponse(ReserveSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class RoomList(generics.ListCreateAPIView):
     permission_classes = (permissions.AllowAny,)

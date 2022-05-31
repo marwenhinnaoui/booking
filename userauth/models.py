@@ -10,13 +10,15 @@ class hotel(models.Model):
     location = models.CharField(max_length=20, blank=True)
     description = models.CharField(max_length=300, blank=True)
     stars = models.IntegerField(blank=True)
-    def __str__(self) -> str:
+    def __str__(self):
+        # return f'{[self.nameHotel + self.location + self.description + str(self.stars)]!r}'
         return self.nameHotel
-
 class rooms (models.Model):
     person = models.IntegerField(blank=True)
-    image = models.TextField(unique=True, blank=True)
-    hotel = models.ForeignKey(hotel,on_delete=models.CASCADE)   
+    image = models.TextField(blank=True)
+    hotel = models.ForeignKey(hotel,on_delete=models.CASCADE)
+    isReserved = models.BooleanField(default=False, editable=True)
+
 
 class reservation(models.Model):
     client = models.ForeignKey(User,on_delete=models.CASCADE)
@@ -24,6 +26,4 @@ class reservation(models.Model):
     person = models.IntegerField(blank=True)
     dateStart =  models.DateTimeField(auto_now_add=True, blank=True)
     dateEnd = models.TextField(blank=True)
-    isReserved = models.BooleanField(default=False, editable=True)
-
 
