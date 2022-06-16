@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
 class ReservationSerializer(serializers.ModelSerializer):
     class Meta:
         model = reservation
-        fields = ('client', 'room','person', 'dateStart', 'dateEnd')
+        fields = ('id', 'client', 'room','person', 'dateStart', 'dateEnd')
 
 # Register Serializer
 class RegisterSerializer(serializers.ModelSerializer):

@@ -4,6 +4,7 @@ from django.http.response import JsonResponse
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.contrib.auth.hashers import make_password
+from requests import request
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from knox.models import AuthToken
@@ -14,43 +15,75 @@ from django.contrib.auth import login
 from knox.views import LoginView as KnoxLoginView
 from .models import reservation, rooms
 from rest_framework import status
+from rest_framework.decorators import action
 
-# Create your views here.
+from rest_framework import viewsets
 
 
 def userauth(request):
     return HttpResponse('userauth')
 
-class Reservation(generics.ListCreateAPIView):
-    permission_classes = (permissions.AllowAny,)
-    http_method_names = ['get', 'head', 'post']
+class PostReserve(viewsets.ModelViewSet):
     queryset = reservation.objects.all()
-    def get_serializer_class(self):
-        return ReservationSerializer
-    def Reserve(self, request):
-        queryset = self.get_queryset()
-        if request.method == 'POST' :
-            ReserveSerializer = ReservationSerializer(queryset, many=True)
+    serializer_class = ReservationSerializer
 
-            if ReserveSerializer.is_valid():
-                ReserveSerializer.save()
-                return JsonResponse(ReserveSerializer.data, status=status.HTTP_201_CREATED) 
-            return JsonResponse(ReserveSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
-# class Reservation(generics.ListCreateAPIView):
+class ReservationViewSet(APIView):
+    def delete(self, request, pk, format=None):
+        todo_to_delete =  reservation.objects.filter(pk=pk)
+
+        todo_to_delete.delete()
+
+        return Response({
+            'message': 'Room Deleted Successfully'
+        })
+    def get(self, request, pk=None, format=None):
+        queryset = reservation.objects.all()
+        serializer = ReservationSerializer(queryset, many=True)
+        return Response(serializer.data)
+        
+    def put(self, request, pk=None, format=None):
+        # Get the todo to update
+        todo_to_update = reservation.objects.get(pk=pk)
+
+        # Pass the instance to update to the serializer, and the data and also partial to the serializer
+        # Passing partial will allow us to update without passing the entire Todo object
+        serializer = ReservationSerializer(instance=todo_to_update,data=request.data, partial=True)
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        response = Response()
+
+        response.data = {
+            'message': 'Room Updated Successfully',
+            'data': serializer.data
+        }
+
+        return response
+
+
+
+
+
+# class ReservationViewSet(viewsets.ModelViewSet):
 #     permission_classes = (permissions.AllowAny,)
-#     http_method_names = ['get', 'head', 'post']
+#     http_method_names = ['get', 'head', 'post', 'delete']
 #     queryset = reservation.objects.all()
+#     reservation.objects.filter(id=None).update(person = 4)
+
 #     def get_serializer_class(self):
 #         return ReservationSerializer
-#     def Reserve(request):
+#     # def Delete(self, request):
+#     #     if request.methode == "delete":
+#     #         Id= request.query_params["id"]
+#     #         con = reservation.objects.filter(pk = Id).delete()
+#     def Reserve(self, request):
+#         queryset = self.get_queryset()
 #         if request.method == 'POST' :
-#             ReserveData = JSONParser().parse(request)
-#             ReserveSerializer = ReservationSerializer(data=ReserveData)
+#             ReserveSerializer = ReservationSerializer(queryset, many=True)
 #             if ReserveSerializer.is_valid():
 #                 ReserveSerializer.save()
 #                 return JsonResponse(ReserveSerializer.data, status=status.HTTP_201_CREATED) 
 #             return JsonResponse(ReserveSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
 class RoomList(generics.ListCreateAPIView):
     permission_classes = (permissions.AllowAny,)
